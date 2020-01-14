@@ -5,9 +5,11 @@ HEIGHT = 600
 WHITE = (255, 255, 255) #RGB
 BLACK = (0,0,0)
 BLUE = (0, 76, 153)
+LIGHTBLUE = (52, 177, 235)
 # Boards
 testBoard = [[0 for x in range(9)] for x in range(9)]
 
 # Postions
 gridPos = (75, 100)
 cellSize = 50
+gridSize = cellSize * 9
