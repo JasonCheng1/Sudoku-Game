@@ -67,7 +67,8 @@ class App:
             if self.allCellsDone():
                 # Check if board is correct
                 self.checkAllCells()
-                print(self.incorrectCells)
+                if len(self.incorrectCells) == 0:
+                    print("Congratulations")
 
     def playing_draw(self):
         self.window.fill(WHITE)
@@ -92,8 +93,8 @@ class App:
 
     def checkAllCells(self):
         self.checkRows()
-        self.checkCols()
-        self.checkSmallGrid()
+        # self.checkCols()
+        # self.checkSmallGrid()
 
     def checkRows(self):
         for yidx in range(9):
@@ -102,21 +103,35 @@ class App:
                 if self.grid[yidx][xidx] in possible:
                     possible.remove(self.grid[yidx][xidx])
                 else:
-                    if [xidx, yidx] not in self.lockedCells:
+                    if [xidx, yidx] not in self.lockedCells and [xidx, yidx] not in self.incorrectCells:
                         self.incorrectCells.append([xidx, yidx])
 
     def checkCols(self):
         for xidx in range(9):
             possible = [1, 2, 3, 4, 5, 6, 7, 8, 9]
             for yidx in range(9):
+                if self.grid[yidx][xidx] in possible:
+                    possible.remove(self.grid[yidx][xidx])
+                else:
+                    if [xidx, yidx] not in self.lockedCells and [xidx, yidx] not in self.incorrectCells:
+                        self.incorrectCells.append([xidx, yidx])
 
     def checkSmallGrid(self):
-        pass
+        for x in range(3):
+            for y in range(3):
+                possible = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+                for xidx in range(3*x, 3*x + 3):
+                    for yidx in range(3*y, 3*y + 3):
+                        if self.grid[yidx][xidx] in possible:
+                            possible.remove(self.grid[yidx][xidx])
+                        else:
+                            if [xidx, yidx] not in self.lockedCells and [xidx, yidx] not in self.incorrectCells:
+                                self.incorrectCells.append([xidx, yidx])
     """Helper Function"""
 
     def shadeIncorrectCells(self, window, locked):
         for cell in self.incorrectCells:
-            pygame.draw.rect(window, INCORRECTCELLCOLOR((
+            pygame.draw.rect(window, INCORRECTCELLCOLOR, ((
                 cell[0]*cellSize) + gridPos[0], (cell[1]*cellSize) + gridPos[1], cellSize, cellSize))
 
     def shadeLockedCells(self, window, locked):
@@ -146,9 +161,6 @@ class App:
                 x*cellSize), gridPos[1]), (gridPos[0]+(x*cellSize), gridPos[1] + 450), 2 if boundary else 1)
             pygame.draw.line(window, BLUE if boundary else BLACK, (gridPos[0], gridPos[1]+(
                 x*cellSize)), (gridPos[0] + 450, gridPos[1]+(x*cellSize)), 2 if boundary else 1)
-            # else:
-            #     pygame.draw.line(window, BLACK, (gridPos[0]+(x*cellSize), gridPos[1]), (gridPos[0]+(x*cellSize), gridPos[1] + 450))
-            #     pygame.draw.line(window, BLACK, (gridPos[0], gridPos[1]+(x*cellSize)), (gridPos[0] + 450, gridPos[1]+(x*cellSize)))
 
     def mouseOnGrid(self):
         if self.mousePos[0] < gridPos[0] or self.mousePos[1] < gridPos[1]:  # left or above
