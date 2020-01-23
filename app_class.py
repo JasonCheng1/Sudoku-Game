@@ -11,7 +11,7 @@ class App:
         pygame.init()
         self.running = True
         self.window = pygame.display.set_mode((WIDTH, HEIGHT))
-        self.grid = testBoard2
+        self.grid = board
         self.selected = None
         self.mousePos = None
         self.state = "playing"
@@ -47,7 +47,7 @@ class App:
                 if self.playingButtons[0].highlighted:
                     self.solve()
                     self.cellChanged = True
-                    print("I have given up.")
+                    self.print_board(self.grid)
                     continue
                 selected = self.mouseOnGrid()  # return true if mouse is on grid else false
                 if selected:
@@ -102,7 +102,6 @@ class App:
             if plausible[i] == 0:
                 if self.valid(self.grid, i, (row, col)):
                     self.grid[row][col] = i
-                    self.print_board(self.grid)
                     if self.solve():
                         return True
                     self.grid[row][col] = 0
@@ -213,8 +212,8 @@ class App:
                                 self.incorrectCells.append([xidx, yidx])
     """Helper Function"""
 
-    def shadeIncorrectCells(self, window, locked):
-        for cell in self.incorrectCells:
+    def shadeIncorrectCells(self, window, incorrect):
+        for cell in incorrect:
             pygame.draw.rect(window, INCORRECTCELLCOLOR, ((
                 cell[0]*cellSize) + gridPos[0], (cell[1]*cellSize) + gridPos[1], cellSize, cellSize))
 
