@@ -93,8 +93,8 @@ class App:
 
     def checkAllCells(self):
         self.checkRows()
-        # self.checkCols()
-        # self.checkSmallGrid()
+        self.checkCols()
+        self.checkSmallGrid()
 
     def checkRows(self):
         for yidx in range(9):
