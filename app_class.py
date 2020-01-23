@@ -3,13 +3,15 @@ import sys
 from settings import *
 from buttonClass import *
 
+sys.setrecursionlimit(100000)
+
 
 class App:
     def __init__(self):
         pygame.init()
         self.running = True
         self.window = pygame.display.set_mode((WIDTH, HEIGHT))
-        self.grid = finishedBoard
+        self.grid = board
         self.selected = None
         self.mousePos = None
         self.state = "playing"
@@ -42,6 +44,11 @@ class App:
 
             # User Clicks
             if event.type == pygame.MOUSEBUTTONDOWN:
+                if self.playingButtons[0].highlighted:
+                    self.solve()
+                    self.cellChanged = True
+                    self.print_board(self.grid)
+                    continue
                 selected = self.mouseOnGrid()  # return true if mouse is on grid else false
                 if selected:
                     self.selected = selected
@@ -82,6 +89,82 @@ class App:
         self.drawGrid(self.window)
         pygame.display.update()
         self.cellChanged = False
+    """Back-Tracking Algorithm"""
+
+    def solve(self):
+        find = self.find_empty()
+        if not find:
+            return True
+        else:
+            row, col = find
+        plausible = self.possible(self.grid, find)
+        for i in range(1, 10):
+            if plausible[i] == 0:
+                if self.valid(self.grid, i, (row, col)):
+                    self.grid[row][col] = i
+                    if self.solve():
+                        return True
+                    self.grid[row][col] = 0
+        return False
+
+    def find_empty(self):
+        for i in range(len(self.grid)):
+            for j in range(len(self.grid[0])):
+                if self.grid[i][j] == 0:
+                    return (i, j)
+        return None
+
+    def valid(self, board, num, pos):
+        return self.check_row(board, num, pos) and self.check_col(board, num, pos) and self.check_box(board, num, pos)
+
+    def check_row(self, board, num, pos):
+        for i in range(len(board[0])):
+            if board[pos[0]][i] == num and i != pos[1]:
+                return False
+        return True
+
+    def check_col(self, board, num, pos):
+        for i in range(len(board)):
+            if board[i][pos[1]] == num and i != pos[0]:
+                return False
+        return True
+
+    def check_box(self, board, num, pos):
+        x = pos[1]//3
+        y = pos[0]//3
+        for i in range(3*y, 3*y + 3):
+            for j in range(3*x, 3*x + 3):
+                if board[i][j] == num and (i, j) != pos:
+                    return False
+        return True
+
+    def possible(self, board, pos):
+        res = [0] * 10
+        for i in range(len(board[0])):
+            res[board[pos[0]][i]] += 1
+        for i in range(len(board)):
+            res[board[i][pos[1]]] += 1
+        x = pos[1]//3
+        y = pos[0]//3
+        for i in range(3*y, 3*y + 3):
+            for j in range(3*x, 3*x + 3):
+                res[board[i][j]] += 1
+        return res
+
+    def print_board(self, board):
+        for i in range(len(board)):
+            if i % 3 == 0 and i != 0:
+                print("_______________________")
+
+            for j in range(len(board[0])):
+                if j % 3 == 0 and j != 0:
+                    print("| ", end="")
+
+                if j == 8:
+                    print(board[i][j])
+                else:
+                    print(str(board[i][j]) + " ", end="")
+        print("\n<_______________________>\n")
     """Board Checking Function"""
 
     def allCellsDone(self):
@@ -129,8 +212,8 @@ class App:
                                 self.incorrectCells.append([xidx, yidx])
     """Helper Function"""
 
-    def shadeIncorrectCells(self, window, locked):
-        for cell in self.incorrectCells:
+    def shadeIncorrectCells(self, window, incorrect):
+        for cell in incorrect:
             pygame.draw.rect(window, INCORRECTCELLCOLOR, ((
                 cell[0]*cellSize) + gridPos[0], (cell[1]*cellSize) + gridPos[1], cellSize, cellSize))
 
